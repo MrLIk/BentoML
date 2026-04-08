@@ -146,13 +146,15 @@ class Sqlite3Store(ResultStore[Request, Response]):
 
     async def new_entry(self, name: str, input: Request) -> str:
         task_id = uuid.uuid4().hex
+        now = datetime.datetime.now(tz=datetime.timezone.utc)
         await self._conn.execute(
-            "INSERT INTO result (task_id, name, input, status) VALUES (?, ?, ?, ?)",
+            "INSERT INTO result (task_id, name, input, status, created_at) VALUES (?, ?, ?, ?, ?)",
             (
                 task_id,
                 name,
                 await self.serializer.serialize_request(input),
                 ResultStatus.IN_PROGRESS.value,
+                now,
             ),
         )
         await self._conn.commit()
